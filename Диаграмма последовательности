@@ -1,0 +1,9 @@
+@startuml
+Human -> Server: Хочу пить
+Camera -> Server: Где робот?
+Server -> Robot: Двигайся
+Scale -> Server: Что-то стоит
+Server -> Station: Налей напиток
+Robot -> Human: На
+Human -> Server: Напиток получен
+@enduml
