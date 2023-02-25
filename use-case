@@ -1,0 +1,6 @@
+@startuml
+actor Human
+:Human: --> (Send request)
+:Human: --> (Put glass down)
+:Human: --> (Get glass)
+@enduml
