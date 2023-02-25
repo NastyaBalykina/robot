@@ -1,0 +1,54 @@
+@startuml
+class student{
+place
+order(bool o, unsigned int p)
+}
+
+class interface{
+take order(bool o, unsigned int p)
+}
+
+class server{
+get_order(student.order(o,p))
+get_weight(scale.weight(m))
+}
+class scale{
+weight_sensor
+get_weight(unsigned int m)
+}
+class videocapture{
+frame
+}
+class detector{
+getFrame()
+findObject()
+}
+class beerStation{
+beer_amount
+valve
+pouring(unsigned int t)
+virtual void beer()=0
+}
+class robocontrol{
+makeroute()
+}
+class robot{
+engine
+slewing gear
+forward (unsigned int t)
+left (unsigned int t)
+right (unsigned int t)
+backward (unsigned int t)
+virtual void stop()=0
+}
+student ..> interface
+interface --o server
+videocapture -o detector
+detector -o server 
+server o-- scale
+robocontrol o- robot
+server o- robocontrol
+student ..> robot
+server --o beerStation
+
+@enduml
