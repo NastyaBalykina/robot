@@ -13,33 +13,20 @@ topic = "tgbot"
 client_id = f'python-mqtt-{random.randint(0, 1000)}'
 msgpost = None
 
-def connect_mqtt():
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-        else:
-            print("Failed to connect, return code %d\n", rc)
-    # Set Connecting Client ID
+
+
+def publish(topic, message):
     client = mqtt_client.Client(client_id)
-    client.on_connect = on_connect
+    # устанавливаем соединение с сервером
     client.connect(broker, port)
-    return client
-
-
-def publish(client):
-    msg = f"messages: {msgpost}"
-    result = client.publish(topic, msg)
+    result = client.publish(topic, message)
     # result: [0, 1]
     status = result[0]
     if status == 0:
-        print(f"Send `{msg}` to topic `{topic}`")
+        print(f"Send `{message}` to topic `{topic}`")
     else:
         print(f"Failed to send message to topic {topic}")
-
-def mqttpost():
-    client = connect_mqtt()
-    client.loop_start()
-    publish(client)
+    client.disconnect()
 
 
 @bot.message_handler(content_types=['text'])
@@ -48,7 +35,7 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, "Напиши /menu")
     elif message.text == '/menu':
         keyboard = types.InlineKeyboardMarkup()  # клавиатура
-        key_pivo = types.InlineKeyboardButton(text='Будешь пиво?', callback_data='pivo')
+        key_pivo = types.InlineKeyboardButton(text='Нажми для пива', callback_data='pivo')
         keyboard.add(key_pivo)
         question = 'Привет!'
         bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
@@ -70,7 +57,7 @@ def callback_worker(call):
         question = 'Скажи номер места'
         bot.send_message(call.from_user.id, text=question, reply_markup=keyboard)
     elif call.data == "no":
-        bot.send_message(call.message.chat.id, 'Ты не знаешь, от чего отказываешься')
+        bot.send_message(call.message.chat.id, 'Ты не знаешь, от чего отказываешься :(')
     elif call.data == "pivo":
         keyboard = types.InlineKeyboardMarkup()  # клавиатура
         key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')  # кнопка «Да»
@@ -81,19 +68,15 @@ def callback_worker(call):
         bot.send_message(call.from_user.id, text=question, reply_markup=keyboard)
     elif call.data == "1":
         bot.send_message(call.from_user.id, "Место 1, уже бегу!")
-        msgpost == "1"
-        mqttpost()
+        publish(topic, "1")
     elif call.data == "2":
         bot.send_message(call.from_user.id, "Место 2, уже бегу!")
-        msgpost == "2"
-        mqttpost()
-    elif call.data == "3":
+        publish(topic, "2")
+    elif call.data == "2":
         bot.send_message(call.from_user.id, "Место 3, уже бегу!")
-        msgpost == "3"
-        mqttpost()
+        publish(topic, "3")
     elif call.data == "4":
         bot.send_message(call.from_user.id, "Место 4, уже бегу!")
-        msgpost == "4"
-        mqttpost()
+        publish(topic, "4")
 
 bot.polling(none_stop=True, interval=0)
