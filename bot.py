@@ -72,7 +72,7 @@ def callback_worker(call):
     elif call.data == "2":
         bot.send_message(call.from_user.id, "Место 2, уже бегу!")
         publish(topic, "2")
-    elif call.data == "2":
+    elif call.data == "3":
         bot.send_message(call.from_user.id, "Место 3, уже бегу!")
         publish(topic, "3")
     elif call.data == "4":
