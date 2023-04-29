@@ -59,6 +59,11 @@ class Robot:
     def work_thread(self):
         while not self.stop_thread:
             if self.state == "On_station":
+                print("Какой хороший день для пива")
+                time.sleep(1)
+                print("люблю доставлять людям счастье и пиво")
+                time.sleep(1)
+                print("Пам-парам, у меня есть пиво!")
                 #стоять чилить
             elif self.state == "Get_order":
                 if self.pouring_state == "nalito":
