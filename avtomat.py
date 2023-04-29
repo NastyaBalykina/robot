@@ -15,7 +15,6 @@ class Robot:
         self.x = None   #Позиция робота
         self.y = None
         self.angle = None
-        self.order_place = None
         self.target_angle = None #Позиция цели
         self.target_x = None
         self.target_y = None
@@ -39,7 +38,6 @@ class Robot:
             def on_message(client, userdata, msg):
                 topic = msg.topic
                 if topic == "tgbot":    #получает место заказа
-                    self.order_place = int(msg)
                     self.state = "Get_order"
                 elif topic == "robot":  #получает координаты робота
                     self.x, self.y = map(float, msg.payload.decode().split(","))
@@ -47,7 +45,7 @@ class Robot:
                     self.station_x, self.station_y = map(float, msg.payload.decode().split(","))
                 elif topic == "target": #получает координаты цели
                     self.target_x, self.target_y = map(float, msg.payload.decode().split(","))
-                elif topic == "pivo_station":   #
+                elif topic == "pivo_station":   #налито?
                     self.pouring_state = "nalito"
 
             if self.mqtt_client is None:
@@ -59,20 +57,15 @@ class Robot:
                 time.sleep(1)
 
     def work_thread(self):
-        order_place = None
         while not self.stop_thread:
             if self.state == "On_station":
-                if self.order_place != 0:
-                    self.state = "Get_order"
-        
+                #стоять чилить
             elif self.state == "Get_order":
-                order_place = self.order_place
                 if self.pouring_state == "nalito":
                     self.state = "Bring_order"
                     self.pouring_state = None
             elif self.state == "Bring_order":
-                self.move_to_customer(order_place)
-                order_place = None
+                self.move_to_customer(self)
             elif self.state == "Goto_station":
                 self.move_to_station()
                 self.state = "On_station"
@@ -83,8 +76,7 @@ class Robot:
     def start_work_thread(self):
         threading.Thread(target=self.work_thread, daemon=True).start()
 
-    def move_to_customer(self, order_place):
-        #выбрать цель в зависимости от значения order_place
+    def move_to_customer(self):
         while distance(self.x, self.y, self.target_x, self.target_y) >= 0:
             if self.angle != self.target_angle:
                     #повернуться
@@ -92,7 +84,6 @@ class Robot:
                     #ехать прямо
 
     def move_to_station(self):
-        # выбрать цель в зависимости от значения order_place
         while distance(self.x, self.y, self.station_x, self.station_y) >= 0:
             if self.angle != self.station_angle:
                 # повернуться
