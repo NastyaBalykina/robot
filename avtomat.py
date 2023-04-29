@@ -1,9 +1,14 @@
+import time
 import threading
 import paho.mqtt.client as mqtt
+import math
+
+def angle(x,y):
+    return math.atan(x/y)
 
 class Robot:
-    def init(self):
-        self.state = "Work"
+    def __init__(self):
+        self.state = "On_station"
         self.x = 0.0   #Позиция робота
         self.y = 0.0
         self.angle = 0.0
@@ -14,6 +19,7 @@ class Robot:
         self.station_x = 0.0    #Позиция станции
         self.station_y = 0.0
         self.station_angle = 0.0
+        self.pouring_state = None
         self.mqtt_client = None #MQTT
         self.stop_thread = False
 
@@ -35,8 +41,7 @@ class Robot:
                     if self.state == "Bring_order":
                         self.target_x, self.target_y = map(float, msg.payload.decode().split(","))
                 elif topic == "pivo_station":
-                    if msg == "nalito":
-                        self.state = "Bring_order"
+                    self.pouring_state = "nalito"
 
             if self.mqtt_client is None:
                 self.mqtt_client = mqtt.Client()
@@ -47,12 +52,23 @@ class Robot:
                 time.sleep(1)
 
     def work_thread(self):
+        order_place = None
         while not self.stop_thread:
-            if self.state == "Work":
+            if self.state == "On_station":
+                if self.order_place != 0:
+                    self.state = "Get_order"
         
             elif self.state == "Get_order":
-
+                order_place = self.order_place
+                if self.pouring_state == "nalito":
+                    self.state = "Bring_order"
+                    self.pouring_state = None
             elif self.state == "Bring_order":
+                self.move_to_customer(order_place)
+                order_place = None
+            elif self.state == "Goto_station":
+                self.move_to_station()
+                self.state = "On_station"
 
     def start_mqtt_thread(self):
         threading.Thread(target=self.mqtt_thread, daemon=True).start()
