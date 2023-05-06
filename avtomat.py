@@ -2,9 +2,18 @@ import time
 import threading
 import paho.mqtt.client as mqtt
 import math
+from paho.mqtt import publish
 
 def angle(x,y):
     return math.atan(x/y)
+
+def cosinus(x1,x2,y1,y2):
+    cos = abs(x1*x2 + y1*y2) / (math.sqrt(x1**2 + y1**2) * math.sqrt(x2**2 + y2**2))
+    return cos
+
+def angle_between_vectors(self):
+    angle = math.acos(cosinus(self.x1,self.x2,self.y1,self.y2))
+    return angle
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x2-x1)**2+(y2-y1)**2)
@@ -75,18 +84,19 @@ class Robot:
                 self.move_to_station()
                 self.state = "On_station"
 
-    def start_mqtt_thread(self):
-        threading.Thread(target=self.mqtt_thread, daemon=True).start()
-
-    def start_work_thread(self):
-        threading.Thread(target=self.work_thread, daemon=True).start()
-
     def move_to_customer(self):
         while distance(self.x, self.y, self.target_x, self.target_y) >= 0:
-            if self.angle != self.target_angle:
-                    #повернуться
+            if self.angle != self.target_angle: #повернуться
+                if self.angle > self.target_angle:  #повернуться по часовой
+                    msg = "{\"cmd\":\"right\",\"val\":2.0,\"spd\":0.6}"
+                    publish("abot/command/alex", msg)
+                elif self.angle < self.target_angle:    #повернуться против часовой
+                    msg = "{\"cmd\":\"left\",\"val\":2.0,\"spd\":0.6}"
+                    publish("abot/command/alex", msg)
             else:
-                    #ехать прямо
+                msg = "{\"cmd\":\"forward\",\"val\":2.0,\"spd\":0.6}"
+                publish("abot/command/alex", msg)
+                #ехать прямо
 
     def move_to_station(self):
         while distance(self.x, self.y, self.station_x, self.station_y) >= 0:
