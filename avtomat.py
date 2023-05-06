@@ -100,9 +100,16 @@ class Robot:
 
     def move_to_station(self):
         while distance(self.x, self.y, self.station_x, self.station_y) >= 0:
-            if self.angle != self.station_angle:
-                # повернуться
+            if self.angle != self.station_angle:  # повернуться
+                if self.angle > self.station_angle:  # повернуться по часовой
+                    msg = "{\"cmd\":\"right\",\"val\":2.0,\"spd\":0.6}"
+                    publish("abot/command/alex", msg)
+                elif self.angle < self.station_angle:  # повернуться против часовой
+                    msg = "{\"cmd\":\"left\",\"val\":2.0,\"spd\":0.6}"
+                    publish("abot/command/alex", msg)
             else:
+                msg = "{\"cmd\":\"forward\",\"val\":2.0,\"spd\":0.6}"
+                publish("abot/command/alex", msg)
                 # ехать прямо
 
     def run(self):
